@@ -15,20 +15,21 @@ void AMyActor::BeginPlay()
 	UE_LOG(LogTemp, Warning, TEXT("Start"));
 	SetActorLocation(FVector(0, 50, 0));
 
-	//FVector ActorLocation = GetActorLocation();
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Red, TEXT("Cube"));
-		//GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Blue, FString::Printf(TEXT("Actor : %s"), *GetName()));
 		GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Blue, FString::Printf(TEXT("Cube Location : %s"), *GetActorLocation().ToString()));
 		GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Blue, FString::Printf(TEXT("Cube Rotation : %s"), *GetActorRotation().ToString()));
 	}
 
+	fail = 0;
+	movecount = 0;
+	turncount = 0;
+
 	for (int i = 0; i < 10; i++)
 	{
-		Random();
+		RandomAction();
 	}
-	
 }
 
 void AMyActor::Tick(float DeltaTime)
@@ -38,48 +39,91 @@ void AMyActor::Tick(float DeltaTime)
 
 void AMyActor::Move(const FVector& direction)
 {
-	FVector CurrentLocation = GetActorLocation();
-	FVector NewLocation = CurrentLocation + direction;
-	SetActorLocation(NewLocation);
-	UE_LOG(LogTemp, Warning, TEXT("Vector : X = %f, Y = %f, Z = %f"), NewLocation.X, NewLocation.Y, NewLocation.Z);
-	if (GEngine)
+	bool Event = TriggerEvent();
+
+	if (Event)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Green, FString::Printf(TEXT("Move : %s"), *direction.ToString()));
-		GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Green, FString::Printf(TEXT("Cube Location : %s"), *GetActorLocation().ToString()));
+		movecount++;
+		FVector CurrentLocation = GetActorLocation();
+		FVector NewLocation = CurrentLocation + direction;
+		SetActorLocation(NewLocation);
+
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Green, FString::Printf(TEXT("Move : %s"), *direction.ToString()));
+			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Green, FString::Printf(TEXT("MoveCount : %d , Cube Location : %s"), movecount, *GetActorLocation().ToString()));
+		}
+	}
+	else
+	{
+		fail++;
 	}
 }
 
 void AMyActor::Turn(const FRotator& rotation)
 {
-	//AddActorLocalRotation(rotation);
-
-	FRotator CurrentRotation = GetActorRotation();
-	FRotator NewRotation = CurrentRotation + rotation;
-	SetActorRotation(NewRotation);
-	UE_LOG(LogTemp, Warning, TEXT("Rotator : X = %f, Y = %f, Z = %f"), NewRotation.Pitch, NewRotation.Yaw, NewRotation.Roll);
-	if (GEngine)
+	bool event = TriggerEvent();
+	if (event)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Orange, FString::Printf(TEXT("Turn : %s"), *rotation.ToString()));
-		GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Orange, FString::Printf(TEXT("Cube Rotation : %s"), *GetActorRotation().ToString()));
+		turncount++;
+		FRotator CurrentRotation = GetActorRotation();
+		FRotator NewRotation = CurrentRotation + rotation;
+		SetActorRotation(NewRotation);
+
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Orange, FString::Printf(TEXT("Turn : %s"), *rotation.ToString()));
+			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Orange, FString::Printf(TEXT("TurnCount : %d , Cube Rotation : %s"), turncount, *GetActorRotation().ToString()));
+		}
+	}
+	else
+	{
+		fail++;
 	}
 }
 
-void AMyActor::Random()
+void AMyActor::RandomAction()
 {
 	int32 RandomValue = FMath::RandRange(1, 100); // 1 ~ 100의 난수 생성
-
+	
 	if (RandomValue < 50)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Move!"));
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Yellow, TEXT("Move"));
+		}
 		FVector RandomVector(FMath::RandRange(-50, 50), FMath::RandRange(-50, 50), FMath::RandRange(-50, 50));
 		Move(RandomVector);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Turn"));
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Yellow, TEXT("Turn"));
+		}
 		FRotator RandomRotator(FMath::RandRange(-10, 10), FMath::RandRange(-10, 10), FMath::RandRange(-10, 10));
 		Turn(RandomRotator);
 	}
+}
+
+bool AMyActor::TriggerEvent()
+{
+	bool Event;
+	int EventNum = FMath::RandRange(0, 1);
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Magenta, TEXT("Event!!!"));
+
+	if (EventNum == 0)
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Blue, TEXT("Good"));
+		Event = true;
+	}
+	else
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Red, TEXT("Bad"));
+		Event = false;
+	}
+
+	return Event;
 }
 
 /*

@@ -25,7 +25,12 @@ public:
 	virtual void Tick(float deltaTime) override;
 	void Move(const FVector& direction);
 	void Turn(const FRotator& rotation);
-	void Random();
+	void RandomAction();
 	//TArray<FVector> PrintFVectorArray();
 	//TArray<FRotator> PrintFRotatorArray();
+	int fail;
+	int movecount;
+	int turncount;
+
+	bool TriggerEvent();
 };
