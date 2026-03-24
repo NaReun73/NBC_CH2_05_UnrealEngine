@@ -22,13 +22,20 @@ void AMyActor::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Blue, FString::Printf(TEXT("Cube Rotation : %s"), *GetActorRotation().ToString()));
 	}
 
-	fail = 0;
+	eventcount = 0;
 	movecount = 0;
 	turncount = 0;
+	movedistance = 0;
 
 	for (int i = 0; i < 10; i++)
 	{
 		RandomAction();
+		if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::White, TEXT("-----------------------------"));
+	}
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Green, FString::Printf(TEXT("Move : %d, Turn : %d, Event : %d, Movedistance : %f"), movecount, turncount, eventcount, movedistance));
 	}
 }
 
@@ -39,31 +46,33 @@ void AMyActor::Tick(float DeltaTime)
 
 void AMyActor::Move(const FVector& direction)
 {
-	bool Event = TriggerEvent();
+	bool event = TriggerEvent();
 
-	if (Event)
+	if (!event)
 	{
 		movecount++;
 		FVector CurrentLocation = GetActorLocation();
 		FVector NewLocation = CurrentLocation + direction;
 		SetActorLocation(NewLocation);
 
+		movedistance += distance(CurrentLocation, NewLocation);
 		if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Green, FString::Printf(TEXT("Move : %s"), *direction.ToString()));
 			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Green, FString::Printf(TEXT("MoveCount : %d , Cube Location : %s"), movecount, *GetActorLocation().ToString()));
+			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Green, FString::Printf(TEXT("distance : %f"), distance(CurrentLocation, NewLocation)));
 		}
 	}
 	else
 	{
-		fail++;
+		eventcount++;
 	}
 }
 
 void AMyActor::Turn(const FRotator& rotation)
 {
 	bool event = TriggerEvent();
-	if (event)
+	if (!event)
 	{
 		turncount++;
 		FRotator CurrentRotation = GetActorRotation();
@@ -78,7 +87,7 @@ void AMyActor::Turn(const FRotator& rotation)
 	}
 	else
 	{
-		fail++;
+		eventcount++;
 	}
 }
 
@@ -90,7 +99,7 @@ void AMyActor::RandomAction()
 	{
 		if (GEngine)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Yellow, TEXT("Move"));
+			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Yellow, TEXT("Move Start"));
 		}
 		FVector RandomVector(FMath::RandRange(-50, 50), FMath::RandRange(-50, 50), FMath::RandRange(-50, 50));
 		Move(RandomVector);
@@ -99,7 +108,7 @@ void AMyActor::RandomAction()
 	{
 		if (GEngine)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Yellow, TEXT("Turn"));
+			GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Yellow, TEXT("Turn Start"));
 		}
 		FRotator RandomRotator(FMath::RandRange(-10, 10), FMath::RandRange(-10, 10), FMath::RandRange(-10, 10));
 		Turn(RandomRotator);
@@ -108,22 +117,24 @@ void AMyActor::RandomAction()
 
 bool AMyActor::TriggerEvent()
 {
-	bool Event;
+	bool Event = false;
 	int EventNum = FMath::RandRange(0, 1);
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Magenta, TEXT("Event!!!"));
 
 	if (EventNum == 0)
 	{
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Blue, TEXT("Good"));
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Magenta, TEXT("Bad Event!!!"));
 		Event = true;
-	}
-	else
-	{
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 300.0f, FColor::Red, TEXT("Bad"));
-		Event = false;
 	}
 
 	return Event;
+}
+
+float AMyActor::distance(FVector first, FVector second)
+{
+	float dx = first.X - second.X;
+	float dy = first.Y - second.Y;
+	float dz = first.Z - second.Z;
+	return FMath::RoundToInt(FMath::Sqrt(dx * dx + dy * dy + dz * dz));
 }
 
 /*

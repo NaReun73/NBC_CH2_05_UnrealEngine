@@ -28,9 +28,10 @@ public:
 	void RandomAction();
 	//TArray<FVector> PrintFVectorArray();
 	//TArray<FRotator> PrintFRotatorArray();
-	int fail;
+	int eventcount;
 	int movecount;
 	int turncount;
-
 	bool TriggerEvent();
+	float movedistance;
+	float distance(FVector First, FVector second);
 };
